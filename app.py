@@ -1314,16 +1314,18 @@ def run_script():
                 error_message=str(e),
             )
             yield f"data: {json.dumps({'type': 'error', 'content': f'❌ Execution Error: {str(e)}'})}\n\n"
-        finally:
-            if 'run_path' in locals() and run_path != full_path:
-                try:
-                    if os.path.exists(run_path):
-                        os.remove(run_path)
-                except Exception:
-                    pass
-            with active_processes_lock:
-                if run_id in active_processes:
-                    del active_processes[run_id]
+finally:
+
+    try:
+        if 'run_path' in locals() and run_path and run_path != full_path:
+            if os.path.exists(run_path):
+                os.remove(run_path)
+    except OSError:
+
+        pass
+
+    with active_processes_lock:
+        active_processes.pop(run_id, None)
 
     return Response(generate(), mimetype='text/event-stream')
 
