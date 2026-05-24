@@ -1040,41 +1040,35 @@ def _escape_bash_echo(text):
     escaped = escaped.replace('`', '\\`')
     return escaped
 
-
 def instrument_script(content):
     lines = content.splitlines()
     instrumented_lines = []
     steps = []
-    
-    # First pass: find all executable steps
+
     for line in lines:
         stripped = line.strip()
-        if not stripped:
+        if not stripped or stripped.startswith('#'):
             continue
-        if stripped.startswith('#'):
-            continue
-        steps.append(stripped)
-        
+        steps.append(stripped.split('#')[0].strip())
+
     total_steps = len(steps)
-    
-    # Second pass: inject progress calls
+
     step_idx = 0
     for line in lines:
         stripped = line.strip()
         
-        is_step = False
         if stripped and not stripped.startswith('#'):
-            is_step = True
-                
-        if is_step:
             step_idx += 1
-            # Clean command display for security and readability
+
             cmd_display = stripped.split('#')[0].strip()
             cmd_escaped = _escape_bash_echo(cmd_display)
-            instrumented_lines.append(f'echo "::progress::{step_idx}::{total_steps}::{cmd_escaped}"')
-            
+
+            instrumented_lines.append(
+                f'echo "::progress::{step_idx}::{total_steps}::{cmd_escaped}"'
+            )
+
         instrumented_lines.append(line)
-        
+
     return '\n'.join(instrumented_lines), steps
 def _terminate_process_tree(proc, timeout=3):
     if proc.poll() is not None:
