@@ -596,12 +596,15 @@ def check_lock(rel_path: str, provided_pass: str) -> bool:
     return True
 
 
+import os
 def is_safe_path(base_dir, target_path):
-    base_dir = os.path.abspath(base_dir)
-    target_path = os.path.abspath(target_path)
+    base_dir = os.path.abspath(os.path.realpath(base_dir))
+    target_path = os.path.abspath(os.path.realpath(target_path))
 
-    return os.path.commonpath([base_dir, target_path]) == base_dir
-
+    try:
+        return os.path.commonpath([base_dir, target_path]) == base_dir
+    except ValueError:
+        return False
 
 def parse_script_metadata(filepath):
     """Parse metadata from script comment headers."""
