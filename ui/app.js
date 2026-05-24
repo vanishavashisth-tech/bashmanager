@@ -2899,14 +2899,22 @@ function notify(message, type = 'info') {
 // ─── Workspace Persistence ─────────────────────────────────
 
 function serializeWorkspace() {
-    const terminalSnapshots = state.terminals.map(id => {
+    const terminalSnapshots = state.terminals.map((id) => {
         const terminalBody = document.getElementById(`terminal-body-${id}`);
+        const inputElement = document.getElementById(`terminal-input-${id}`);
+
         return {
             id,
-            content: terminalBody?.innerHTML || '',
-            pendingInput: document.getElementById('cli-input')?.value || ''
+            content: terminalBody?.textContent || "",
+            pendingInput: inputElement?.value || ""
         };
     });
+
+    return {
+        terminals: terminalSnapshots,
+        timestamp: Date.now()
+    };
+}
 
     return {
         terminals: state.terminals,
